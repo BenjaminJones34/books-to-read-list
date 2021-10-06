@@ -1,15 +1,9 @@
 const fs = require("fs");
-const path = require("path");
 const { nanoid, customAlphabet } = require("nanoid");
-const dataPath = path.join(process.env.DATA_LOCATION, "data.json");
 
 function saveData(data) {
     try {
-        if (!fs.existsSync(process.env.DATA_LOCATION)) {
-            fs.mkdirSync(process.env.DATA_LOCATION);
-        }
-        
-        fs.writeFileSync(dataPath, JSON.stringify(data));
+        fs.writeFileSync("data.json", JSON.stringify(data));
     } catch(error) {
         console.log(error);
     }
@@ -17,7 +11,7 @@ function saveData(data) {
 
 function loadData() {
     try {
-        return JSON.parse(fs.readFileSync(dataPath).toString());
+        return JSON.parse(fs.readFileSync("data.json").toString());
     } catch(error) {
         return [];
     }
