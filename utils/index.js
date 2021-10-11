@@ -1,45 +1,27 @@
-const fs = require("fs");
-const { nanoid, customAlphabet } = require("nanoid");
+const { Book } = require("../models");
 
-function saveData(data) {
-    try {
-        fs.writeFileSync("data.json", JSON.stringify(data));
-    } catch(error) {
-        console.log(error);
+async function add(title, author, genre) {
+    await Book.create({title, author, genre});
+};
+
+async function list() {
+    console.log("\n");
+    for (book of await Book.findAll()) {
+        console.log(`ID:\t${book.id}\nTitle:\t${book.title}`);
+        console.log(`Author:\t${book.author}\nGenre:\t${book.genre}\n\n`);
     }
 };
 
-function loadData() {
-    try {
-        return JSON.parse(fs.readFileSync("data.json").toString());
-    } catch(error) {
-        return [];
-    }
+async function update(id, title, author, genre) {
+    const book = await Book.findAll({where: {id}});
+    await Book.update({ title: title || book.title, 
+                        author: author || book.author, 
+                        genre: genre || book.genre
+                    }, { where: {id} });  
 };
 
-function makeId() {
-    return customAlphabet(process.env.CHARACTERS, parseInt(process.env.LENGTH))();
-};
-
-function add(title, author, genre, id = false) {
-    saveData([...loadData(), {id : id || makeId(), title, author, genre}]);
-};
-
-function list() {
-    console.log(loadData());
-};
-
-function update(id, title, author, genre) {
-    const book = remove(id);
-    add(title || book.title, author || book.author, genre || book.genre, id);
-};
-
-function remove(id) {
-    const books = loadData();
-    const book = books.find((book) => book.id === id);
-    const matchBook = (book) => book.id !== id;
-    saveData(books.filter(matchBook));
-    return book;
+async function remove(id) {
+    await Book.destroy({ where: { id } });
 };
 
 module.exports = {add, update, list, remove};
