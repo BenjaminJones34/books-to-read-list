@@ -2,6 +2,7 @@ const { Book } = require("../models");
 
 async function add(title, author, genre) {
     await Book.create({title, author, genre});
+    console.log(`Added: ${title}`);
 };
 
 async function list() {
@@ -17,11 +18,13 @@ async function update(id, title, author, genre) {
     await Book.update({ title: title || book.title, 
                         author: author || book.author, 
                         genre: genre || book.genre
-                    }, { where: {id} });  
+                    }, { where: {id} });
+    await console.log(`\nUpdated: ${book[0].title}\n`);  
 };
 
 async function remove(id) {
     await Book.destroy({ where: { id } });
+    console.log(`\nDeleted book.\n`)
 };
 
 module.exports = {add, update, list, remove};
