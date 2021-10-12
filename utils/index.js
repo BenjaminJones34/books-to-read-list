@@ -1,30 +1,52 @@
-const { Book } = require("../models");
+const { Author, Book, Genre } = require("../models");
 
-async function add(title, author, genre) {
-    await Book.create({title, author, genre});
-    console.log(`Added: ${title}`);
-};
-
-async function list() {
-    console.log("\n");
-    for (book of await Book.findAll()) {
-        console.log(`ID:\t${book.id}\nTitle:\t${book.title}`);
-        console.log(`Author:\t${book.author}\nGenre:\t${book.genre}\n\n`);
+async function add({add, name, AuthorId, GenreId, title}) {
+    if (add === "author") {
+        await Author.create({name});
+    } else if (add === "book") {
+        const author = await Author.findByPk(AuthorId);
+        const genre = await Genre.findByPk(GenreId);
+        await Book.create({title: title, AuthorId: author.id, GenreId: genre.id});
+    } else if (add === "genre") {
+        await Genre.create({name});
     }
 };
 
-async function update(id, title, author, genre) {
-    const book = await Book.findAll({where: {id}});
-    await Book.update({ title: title || book.title, 
-                        author: author || book.author, 
-                        genre: genre || book.genre
-                    }, { where: {id} });
-    await console.log(`\nUpdated: ${book[0].title}\n`);  
+async function list({list}) {
+    let results = [];
+
+    if (list === "authors") {
+        results = await Author.findAll({attributes: ["id", "name"]});
+    } else if (list === "books") {
+        results = await Book.findAll({attributes: ["id", "title", "AuthorId", "GenreId"]});
+    } else if (list === "genres") {
+        results = await Genre.findAll({attributes: ["id", "name"]});
+    }
+
+    console.table(results.map(result => result.dataValues));
 };
 
-async function remove(id) {
-    await Book.destroy({ where: { id } });
-    console.log(`\nDeleted book.\n`)
+async function update({update, id, name, AuthorId, GenreId, title}) {
+    if (update === "author") {
+        const author = await Author.findByPk(id);
+        await Author.update({ name: name || author.name }, {where: {id} });
+    } else if (update === "book") {
+        const book = await Book.findByPk(id);
+        await Book.update({ title: title || book.title, AuthorId: AuthorId || book.AuthorId, GenreId: GenreId || book.GenreId }, {where: {id} });
+    } else if (update === "genre") {
+        const genre = await Genre.findByPk(id);
+        await Genre.update({ name: name || genre.name }, { where: {id} });
+    }
+};
+
+async function remove({remove, id}) {
+    if (remove === "author") {
+        await Author.destroy({where: {id} });
+    } else if (remove === "book") {
+        await Book.destroy({where: {id} });
+    } else if (remove === "genre") {
+        await Genre.destroy({where: {id} });
+    }
 };
 
 module.exports = {add, update, list, remove};

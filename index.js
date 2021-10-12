@@ -4,23 +4,25 @@ const yargs = require("yargs/yargs");
 const { hideBin } = require("yargs/helpers");
 const { add, update, list, remove } = require("./utils/") //with nothing inside it automatically searches for index
 const { connection } = require("./connection");
-const { Book } = require("./models/");
+const { Author, Book, Genre } = require("./models/");
+
 const argv = yargs(hideBin(process.argv)).argv;
 
 async function main() {
     try {
         await connection.authenticate();
+        await Author.sync({alter: true});
+        await Genre.sync({alter: true});
         await Book.sync({alter: true});
-        console.log(`Connection to ${process.env.DB_HOST} established.`);
 
         if (argv.add) {
-            await add(argv.title, argv.author, argv.genre);
-        } else if (argv.update) {
-            await update(argv.id, argv.title, argv.author, argv.genre);
+            await add(argv);
         } else if (argv.list) {
-            await list(argv.title, argv.author, argv.genre);
-        } else if (argv.remove) {
-            await remove(argv.id);
+            await list(argv);
+        } else if (argv.update && argv.id) {
+            await update(argv);
+        } else if (argv.remove && argv.id) {
+            await remove(argv);
         }
 
         await connection.close();
